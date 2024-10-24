@@ -62,7 +62,7 @@ namespace osu.Framework.Graphics.Lines
         [BackgroundDependencyLoader]
         private void load(ShaderManager shaders)
         {
-            blurShader = shaders.Load(VertexShaderDescriptor.TEXTURE_2, FragmentShaderDescriptor.BLUR);
+            blurShader = shaders.Load(VertexShaderDescriptor.TEXTURE_2, FragmentShaderDescriptor.BLUR_CONSTANT);
             blendShader = shaders.Load(VertexShaderDescriptor.TEXTURE_2, FragmentShaderDescriptor.BACKDROP_BLUR_BLEND);
         }
 
