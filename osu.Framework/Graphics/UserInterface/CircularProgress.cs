@@ -52,37 +52,42 @@ namespace osu.Framework.Graphics.UserInterface
             where TEasing : IEasingFunction
             => this.TransformTo(nameof(Progress), newValue, duration, easing);
 
-        private float innerRadius = 1;
+        private float thickness = 1;
 
         /// <summary>
         /// The inner fill radius, relative to the <see cref="Drawable.DrawSize"/> of the <see cref="CircularProgress"/>.
         /// The value range is 0 to 1 where 0 is invisible and 1 is completely filled.
         /// The entire texture still fills the disk without cropping it.
         /// </summary>
-        public float InnerRadius
+        public float Thickness
         {
-            get => innerRadius;
+            get => thickness;
             set
             {
                 if (!float.IsFinite(value))
-                    throw new ArgumentException($"{nameof(InnerRadius)} must be finite, but is {value}.");
+                    throw new ArgumentException($"{nameof(Thickness)} must be finite, but is {value}.");
 
-                innerRadius = Math.Clamp(value, 0, 1);
+                thickness = Math.Clamp(value, 0, 1);
                 Invalidate(Invalidation.DrawNode);
             }
         }
 
-        private bool roundedCaps;
+        private float cornerRadius;
 
-        public bool RoundedCaps
+        /// <summary>
+        /// The inner fill radius, relative to the <see cref="Drawable.DrawSize"/> of the <see cref="CircularProgress"/>.
+        /// The value range is 0 to 1 where 0 is invisible and 1 is completely filled.
+        /// The entire texture still fills the disk without cropping it.
+        /// </summary>
+        public float CornerRadius
         {
-            get => roundedCaps;
+            get => cornerRadius;
             set
             {
-                if (roundedCaps == value)
-                    return;
+                if (!float.IsFinite(value))
+                    throw new ArgumentException($"{nameof(CornerRadius)} must be finite, but is {value}.");
 
-                roundedCaps = value;
+                cornerRadius = Math.Clamp(value, 0, 1);
                 Invalidate(Invalidation.DrawNode);
             }
         }
@@ -96,7 +101,8 @@ namespace osu.Framework.Graphics.UserInterface
             {
             }
 
-            protected float InnerRadius { get; private set; }
+            protected float Thickness { get; private set; }
+            protected float CornerRadius { get; private set; }
             protected float Progress { get; private set; }
             protected float TexelSize { get; private set; }
             protected bool RoundedCaps { get; private set; }
@@ -105,9 +111,9 @@ namespace osu.Framework.Graphics.UserInterface
             {
                 base.ApplyState();
 
-                InnerRadius = Source.innerRadius;
+                Thickness = Source.thickness;
+                CornerRadius = Source.cornerRadius;
                 Progress = Math.Abs((float)Source.progress);
-                RoundedCaps = Source.roundedCaps;
 
                 // smoothstep looks too sharp with 1px, let's give it a bit more
                 TexelSize = 1.5f / ScreenSpaceDrawQuad.Size.X;
@@ -117,7 +123,7 @@ namespace osu.Framework.Graphics.UserInterface
 
             protected override void Blit(IRenderer renderer)
             {
-                if (InnerRadius == 0 || (!RoundedCaps && Progress == 0))
+                if (Thickness == 0 || (CornerRadius == 0 && Progress == 0))
                     return;
 
                 base.Blit(renderer);
@@ -130,10 +136,10 @@ namespace osu.Framework.Graphics.UserInterface
                 parametersBuffer ??= renderer.CreateUniformBuffer<CircularProgressParameters>();
                 parametersBuffer.Data = new CircularProgressParameters
                 {
-                    InnerRadius = InnerRadius,
+                    Thickness = Thickness,
+                    CornerRadius = CornerRadius,
                     Progress = Progress,
                     TexelSize = TexelSize,
-                    RoundedCaps = RoundedCaps,
                 };
 
                 shader.BindUniformBlock("m_CircularProgressParameters", parametersBuffer);
@@ -150,10 +156,10 @@ namespace osu.Framework.Graphics.UserInterface
             [StructLayout(LayoutKind.Sequential, Pack = 1)]
             private record struct CircularProgressParameters
             {
-                public UniformFloat InnerRadius;
+                public UniformFloat Thickness;
+                public UniformFloat CornerRadius;
                 public UniformFloat Progress;
                 public UniformFloat TexelSize;
-                public UniformBool RoundedCaps;
             }
         }
     }

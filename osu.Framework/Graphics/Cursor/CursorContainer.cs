@@ -146,8 +146,8 @@ namespace osu.Framework.Graphics.Cursor
                     this.FadeInFromZero();
 
                     progress.FadeColour(Color4.SkyBlue)
-                            .TransformTo(nameof(progress.InnerRadius), 0.2f)
-                            .TransformTo(nameof(progress.InnerRadius), 0.3f, 150, Easing.OutQuint)
+                            .TransformTo(nameof(progress.Thickness), 0.2f)
+                            .TransformTo(nameof(progress.Thickness), 0.3f, 150, Easing.OutQuint)
                             .ProgressTo(0)
                             .ProgressTo(1, duration / 3 * 2);
 
@@ -156,7 +156,7 @@ namespace osu.Framework.Graphics.Cursor
                         this.FadeOut(500, Easing.OutQuint);
 
                         progress.FadeColour(Color4.White, 800, Easing.OutQuint)
-                                .TransformTo(nameof(progress.InnerRadius), 0.6f, 500, Easing.OutQuint);
+                                .TransformTo(nameof(progress.Thickness), 0.6f, 500, Easing.OutQuint);
                     }
                 }
             }
@@ -166,7 +166,7 @@ namespace osu.Framework.Graphics.Cursor
                 this.FadeOut(400, Easing.OutQuint);
 
                 progress.ProgressTo(0, 400, Easing.OutQuint)
-                        .TransformTo(nameof(progress.InnerRadius), 0.2f, 50, Easing.OutQuint);
+                        .TransformTo(nameof(progress.Thickness), 0.2f, 50, Easing.OutQuint);
             }
         }
     }

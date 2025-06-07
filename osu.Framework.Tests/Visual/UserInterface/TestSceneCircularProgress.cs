@@ -131,11 +131,11 @@ namespace osu.Framework.Tests.Visual.UserInterface
             AddStep("Easing Transform", delegate { transform(3); });
 
             AddToggleStep("Toggle masking", m => maskingContainer.Masking = m);
-            AddToggleStep("Toggle rounded caps", r => clock.RoundedCaps = r);
             AddToggleStep("Toggle aspect ratio", r => clock.Size = r ? new Vector2(600, 400) : new Vector2(400));
             AddToggleStep("Toggle background", b => background.Alpha = b ? 1 : 0);
             AddSliderStep("Scale", 0f, 2f, 1f, s => clock.Scale = new Vector2(s));
-            AddSliderStep("Fill", 0f, 1f, 0.5f, f => clock.InnerRadius = f);
+            AddSliderStep("Thickness", 0f, 1f, 0.5f, f => clock.Thickness = f);
+            AddSliderStep("Corner Radius", 0f, 1f, 0f, f => clock.CornerRadius = f);
         }
 
         protected override void Update()
