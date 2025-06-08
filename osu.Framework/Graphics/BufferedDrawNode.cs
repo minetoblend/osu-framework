@@ -20,7 +20,7 @@ namespace osu.Framework.Graphics
         /// <summary>
         /// The child <see cref="DrawNode"/> which is used to populate the <see cref="IFrameBuffer"/>s with.
         /// </summary>
-        protected DrawNode Child { get; private set; }
+        protected DrawNode Child { get; set; }
 
         /// <summary>
         /// Data shared amongst all <see cref="BufferedDrawNode"/>s, providing storage for <see cref="IFrameBuffer"/>s.

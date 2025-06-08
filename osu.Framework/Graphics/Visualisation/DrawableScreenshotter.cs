@@ -115,6 +115,15 @@ namespace osu.Framework.Graphics.Visualisation
             }
 
             protected override void DrawContents(IRenderer renderer) => onRendered(SharedData.MainBuffer);
+
+            protected override void Dispose(bool isDisposing)
+            {
+                // The default disposal logic would dispose the child draw node, which we want to avoid because since
+                // we're essentially just "borrowing" it from the original drawable.
+                Child = null;
+
+                base.Dispose(isDisposing);
+            }
         }
     }
 }
