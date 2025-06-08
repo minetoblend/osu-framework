@@ -30,9 +30,9 @@ lowp float progressAlphaAt(highp vec2 pixelPos, mediump float progress, mediump 
     pixelPos = (pixelPos - 0.5) * vec2(2, -2);
     pixelPos = mat2x2(cs.x, cs.y, -cs.y, cs.x) * pixelPos;
     
-    float distance = distanceToRing(pixelPos, cs, (outerRadius + innerRadius) * 0.5, outerRadius - innerRadius) - cornerRadius + texelSize;
+    float distance = distanceToRing(pixelPos, cs, (outerRadius + innerRadius) * 0.5 - texelSize, outerRadius - innerRadius) - cornerRadius + texelSize;
 
-    return smoothstep(texelSize, 0.0, distance) * subAAMultiplier;
+    return smoothstep(texelSize, 0.0, distance * 0.5) * subAAMultiplier;
 }
 
 #endif
