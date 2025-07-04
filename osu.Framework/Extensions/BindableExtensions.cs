@@ -41,7 +41,7 @@ namespace osu.Framework.Extensions
         /// <summary>
         /// Bidirectionally syncs the value of two <see cref="Bindable{T}"/>s with the two given transform functions.
         /// </summary>
-        public static Bindable<TDest> SyncWith<TSource, TDest>(this Bindable<TDest> dest, Bindable<TSource> source, Func<TSource, TDest> toDest, Func<TDest, TSource> toSource)
+        public static void SyncWith<TSource, TDest>(this Bindable<TDest> dest, Bindable<TSource> source, Func<TSource, TDest> toDest, Func<TDest, TSource> toSource)
         {
             dest.ComputeFrom(source, toDest);
 
@@ -54,8 +54,6 @@ namespace osu.Framework.Extensions
             {
                 source.Disabled = disabled;
             });
-
-            return dest;
         }
 
         public delegate bool SafeMappingFunction<in TSource, TDest>(TSource value, [MaybeNullWhen(false)] out TDest result);
