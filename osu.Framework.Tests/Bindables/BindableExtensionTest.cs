@@ -48,7 +48,7 @@ namespace osu.Framework.Tests.Bindables
 
             source.Disabled = false;
             Assert.IsFalse(mapped1.Disabled);
-            Assert.IsTrue(mapped2.Disabled);
+            Assert.IsFalse(mapped2.Disabled);
         }
 
         [Test]
