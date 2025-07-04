@@ -98,6 +98,92 @@ namespace osu.Framework.Tests.Bindables
         }
 
         [Test]
+        public void TestSyncedDisabledState()
+        {
+            var source = new Bindable<int>();
+            var dest = new Bindable<string>();
+
+            dest.SyncWith(source, value => value.ToString(), int.Parse);
+
+            int sourceDisabledChanged = 0;
+            int destDisabledChanged = 0;
+
+            source.DisabledChanged += _ => sourceDisabledChanged++;
+            dest.DisabledChanged += _ => destDisabledChanged++;
+
+            source.Disabled = true;
+
+            Assert.IsTrue(source.Disabled);
+            Assert.IsTrue(dest.Disabled);
+            Assert.AreEqual(sourceDisabledChanged, 1);
+            Assert.AreEqual(destDisabledChanged, 1);
+
+            source.Disabled = false;
+
+            Assert.IsFalse(source.Disabled);
+            Assert.IsFalse(dest.Disabled);
+            Assert.AreEqual(sourceDisabledChanged, 2);
+            Assert.AreEqual(destDisabledChanged, 2);
+
+            dest.Disabled = true;
+
+            Assert.IsTrue(source.Disabled);
+            Assert.IsTrue(dest.Disabled);
+            Assert.AreEqual(sourceDisabledChanged, 3);
+            Assert.AreEqual(destDisabledChanged, 3);
+
+            dest.Disabled = false;
+
+            Assert.IsFalse(source.Disabled);
+            Assert.IsFalse(dest.Disabled);
+            Assert.AreEqual(sourceDisabledChanged, 4);
+            Assert.AreEqual(destDisabledChanged, 4);
+        }
+
+        [Test]
+        public void TestSafeSyncedDisabledState()
+        {
+            var source = new Bindable<int>();
+            var dest = new Bindable<string>();
+
+            dest.SyncWith(source, value => value.ToString(), int.TryParse);
+
+            int sourceDisabledChanged = 0;
+            int destDisabledChanged = 0;
+
+            source.DisabledChanged += _ => sourceDisabledChanged++;
+            dest.DisabledChanged += _ => destDisabledChanged++;
+
+            source.Disabled = true;
+
+            Assert.IsTrue(source.Disabled);
+            Assert.IsTrue(dest.Disabled);
+            Assert.AreEqual(sourceDisabledChanged, 1);
+            Assert.AreEqual(destDisabledChanged, 1);
+
+            source.Disabled = false;
+
+            Assert.IsFalse(source.Disabled);
+            Assert.IsFalse(dest.Disabled);
+            Assert.AreEqual(sourceDisabledChanged, 2);
+            Assert.AreEqual(destDisabledChanged, 2);
+
+            dest.Disabled = true;
+
+            Assert.IsTrue(source.Disabled);
+            Assert.IsTrue(dest.Disabled);
+            Assert.AreEqual(sourceDisabledChanged, 3);
+            Assert.AreEqual(destDisabledChanged, 3);
+
+            dest.Disabled = false;
+
+            Assert.IsFalse(source.Disabled);
+            Assert.IsFalse(dest.Disabled);
+            Assert.AreEqual(sourceDisabledChanged, 4);
+            Assert.AreEqual(destDisabledChanged, 4);
+        }
+
+        [Test]
         public void TestSafeSyncedBindable()
         {
             var source = new Bindable<int>();

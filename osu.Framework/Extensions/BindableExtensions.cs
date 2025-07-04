@@ -66,10 +66,7 @@ namespace osu.Framework.Extensions
         /// </summary>
         public static void SyncWith<TSource, TDest>(this Bindable<TDest> dest, Bindable<TSource> source, Func<TSource, TDest> toDest, SafeMappingFunction<TDest, TSource> tryParse)
         {
-            source.BindValueChanged(e =>
-            {
-                dest.Value = toDest(e.NewValue);
-            }, true);
+            dest.ComputeFrom(source, toDest);
 
             dest.BindValueChanged(e =>
             {
@@ -77,6 +74,11 @@ namespace osu.Framework.Extensions
                     source.Value = result;
                 else
                     source.TriggerChange();
+            });
+
+            dest.BindDisabledChanged(disabled =>
+            {
+                source.Disabled = disabled;
             });
         }
 
