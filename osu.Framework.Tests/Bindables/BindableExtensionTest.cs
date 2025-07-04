@@ -50,5 +50,39 @@ namespace osu.Framework.Tests.Bindables
             Assert.IsFalse(mapped1.Disabled);
             Assert.IsTrue(mapped2.Disabled);
         }
+
+        [Test]
+        public void TestSyncedBindable()
+        {
+            var source = new Bindable<int>();
+            var dest = new Bindable<string>();
+
+            int sourceChanged = 0;
+            int destChanged = 0;
+
+            source.ValueChanged += _ => sourceChanged++;
+            dest.ValueChanged += _ => destChanged++;
+
+            dest.SyncWith(source, value => value.ToString(), int.Parse);
+
+            Assert.AreEqual(0, source.Value);
+            Assert.AreEqual("0", dest.Value);
+            Assert.AreEqual(0, sourceChanged);
+            Assert.AreEqual(1, destChanged);
+
+            source.Value = 5;
+
+            Assert.AreEqual(5, source.Value);
+            Assert.AreEqual("5", dest.Value);
+            Assert.AreEqual(1, sourceChanged);
+            Assert.AreEqual(2, destChanged);
+
+            dest.Value = "-10";
+
+            Assert.AreEqual(-10, source.Value);
+            Assert.AreEqual("-10", dest.Value);
+            Assert.AreEqual(2, sourceChanged);
+            Assert.AreEqual(3, destChanged);
+        }
     }
 }
