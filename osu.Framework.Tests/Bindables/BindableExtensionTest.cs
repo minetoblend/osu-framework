@@ -70,19 +70,29 @@ namespace osu.Framework.Tests.Bindables
             Assert.AreEqual(0, sourceChanged);
             Assert.AreEqual(1, destChanged);
 
+            resetCount();
+
             source.Value = 5;
 
             Assert.AreEqual(5, source.Value);
             Assert.AreEqual("5", dest.Value);
             Assert.AreEqual(1, sourceChanged);
-            Assert.AreEqual(2, destChanged);
+            Assert.AreEqual(1, destChanged);
+
+            resetCount();
 
             dest.Value = "-10";
 
             Assert.AreEqual(-10, source.Value);
             Assert.AreEqual("-10", dest.Value);
-            Assert.AreEqual(2, sourceChanged);
-            Assert.AreEqual(3, destChanged);
+            Assert.AreEqual(1, sourceChanged);
+            Assert.AreEqual(1, destChanged);
+
+            void resetCount()
+            {
+                sourceChanged = 0;
+                destChanged = 0;
+            }
         }
 
         [Test]
@@ -104,27 +114,38 @@ namespace osu.Framework.Tests.Bindables
             Assert.AreEqual(0, sourceChanged);
             Assert.AreEqual(1, destChanged);
 
+            resetCount();
+
             source.Value = 5;
 
             Assert.AreEqual(5, source.Value);
             Assert.AreEqual("5", dest.Value);
             Assert.AreEqual(1, sourceChanged);
-            Assert.AreEqual(2, destChanged);
+            Assert.AreEqual(1, destChanged);
+
+            resetCount();
 
             dest.Value = "-10";
 
             Assert.AreEqual(-10, source.Value);
             Assert.AreEqual("-10", dest.Value);
-            Assert.AreEqual(2, sourceChanged);
-            Assert.AreEqual(3, destChanged);
+            Assert.AreEqual(1, sourceChanged);
+            Assert.AreEqual(1, destChanged);
+
+            resetCount();
 
             dest.Value = "invalid value";
 
             Assert.AreEqual(-10, source.Value);
             Assert.AreEqual("-10", dest.Value);
-            Assert.AreEqual(3, sourceChanged);
-            // the destination value gets "reset" based on the source bindable after being set to an invalid value so there are 2 changes expected
-            Assert.AreEqual(5, destChanged);
+            Assert.AreEqual(1, sourceChanged);
+            Assert.AreEqual(2, destChanged);
+
+            void resetCount()
+            {
+                sourceChanged = 0;
+                destChanged = 0;
+            }
         }
     }
 }
