@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using osu.Framework.Bindables;
 
 namespace osu.Framework.Extensions
@@ -78,5 +79,23 @@ namespace osu.Framework.Extensions
                     source.TriggerChange();
             });
         }
+
+        /// <summary>
+        /// Bidirectionally syncs the value of a <see cref="Bindable{T}"/> with a string value with a <see cref="Bindable{T}"/> with an <see cref="int"/> value.
+        /// </summary>
+        public static void SyncWith(this Bindable<string> dest, Bindable<int> source, [StringSyntax("NumericFormat")] string? format = null, IFormatProvider? formatProvider = null) =>
+            dest.SyncWith(source, value => value.ToString(format, formatProvider), (string str, out int result) => int.TryParse(str, formatProvider, out result));
+
+        /// <summary>
+        /// Bidirectionally syncs the value of a <see cref="Bindable{T}"/> with a string value with a <see cref="Bindable{T}"/> with an <see cref="float"/> value.
+        /// </summary>
+        public static void SyncWith(this Bindable<string> dest, Bindable<float> source, [StringSyntax("NumericFormat")] string? format = null, IFormatProvider? formatProvider = null) =>
+            dest.SyncWith(source, value => value.ToString(format, formatProvider ?? CultureInfo.InvariantCulture), (string str, out float result) => float.TryParse(str, formatProvider, out result));
+
+        /// <summary>
+        /// Bidirectionally syncs the value of a <see cref="Bindable{T}"/> with a string value with a <see cref="Bindable{T}"/> with an <see cref="float"/> value.
+        /// </summary>
+        public static void SyncWith(this Bindable<string> dest, Bindable<double> source, [StringSyntax("NumericFormat")] string? format = null, IFormatProvider? formatProvider = null) =>
+            dest.SyncWith(source, value => value.ToString(format, formatProvider ?? CultureInfo.InvariantCulture), (string str, out double result) => double.TryParse(str, formatProvider, out result));
     }
 }
