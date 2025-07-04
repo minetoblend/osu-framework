@@ -2,6 +2,7 @@
 // See the LICENCE file in the repository root for full licence text.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using osu.Framework.Bindables;
 
 namespace osu.Framework.Extensions
@@ -54,6 +55,28 @@ namespace osu.Framework.Extensions
             });
 
             return dest;
+        }
+
+        public delegate bool SafeMappingFunction<in TSource, TDest>(TSource value, [MaybeNullWhen(false)] out TDest result);
+
+        /// <summary>
+        /// Bidirectionally syncs the value of two <see cref="Bindable{T}"/>s with the two given transform functions, with the ability to
+        /// reset the state based on the source <see cref="Bindable{T}"/> if the destination <see cref="Bindable{T}"/>'s value becomes invalid.
+        /// </summary>
+        public static void SyncWith<TSource, TDest>(this Bindable<TDest> dest, Bindable<TSource> source, Func<TSource, TDest> toDest, SafeMappingFunction<TDest, TSource> tryParse)
+        {
+            source.BindValueChanged(e =>
+            {
+                dest.Value = toDest(e.NewValue);
+            }, true);
+
+            dest.BindValueChanged(e =>
+            {
+                if (tryParse(e.NewValue, out var result))
+                    source.Value = result;
+                else
+                    source.TriggerChange();
+            });
         }
     }
 }

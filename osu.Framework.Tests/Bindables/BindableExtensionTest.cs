@@ -84,5 +84,47 @@ namespace osu.Framework.Tests.Bindables
             Assert.AreEqual(2, sourceChanged);
             Assert.AreEqual(3, destChanged);
         }
+
+        [Test]
+        public void TestSafeSyncedBindable()
+        {
+            var source = new Bindable<int>();
+            var dest = new Bindable<string>();
+
+            int sourceChanged = 0;
+            int destChanged = 0;
+
+            source.ValueChanged += _ => sourceChanged++;
+            dest.ValueChanged += _ => destChanged++;
+
+            dest.SyncWith(source, value => value.ToString(), int.TryParse);
+
+            Assert.AreEqual(0, source.Value);
+            Assert.AreEqual("0", dest.Value);
+            Assert.AreEqual(0, sourceChanged);
+            Assert.AreEqual(1, destChanged);
+
+            source.Value = 5;
+
+            Assert.AreEqual(5, source.Value);
+            Assert.AreEqual("5", dest.Value);
+            Assert.AreEqual(1, sourceChanged);
+            Assert.AreEqual(2, destChanged);
+
+            dest.Value = "-10";
+
+            Assert.AreEqual(-10, source.Value);
+            Assert.AreEqual("-10", dest.Value);
+            Assert.AreEqual(2, sourceChanged);
+            Assert.AreEqual(3, destChanged);
+
+            dest.Value = "invalid value";
+
+            Assert.AreEqual(-10, source.Value);
+            Assert.AreEqual("-10", dest.Value);
+            Assert.AreEqual(3, sourceChanged);
+            // the destination value gets "reset" based on the source bindable after being set to an invalid value so there are 2 changes expected
+            Assert.AreEqual(5, destChanged);
+        }
     }
 }
