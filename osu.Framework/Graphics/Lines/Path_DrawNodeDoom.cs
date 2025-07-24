@@ -1,4 +1,4 @@
-// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
+﻿// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
 using osu.Framework.Graphics.Primitives;
@@ -17,7 +17,7 @@ namespace osu.Framework.Graphics.Lines
 {
     public partial class Path
     {
-        private class PathDrawNode : DrawNode
+        private class PathDrawNodeDoom : DrawNode
         {
             private const int max_res = 24;
 
@@ -32,7 +32,11 @@ namespace osu.Framework.Graphics.Lines
 
             private IVertexBatch<TexturedVertex3D>? triangleBatch;
 
-            public PathDrawNode(Path source)
+            private float stepSize = 0.003f;
+            private float distance;
+            private float segmentLength;
+
+            public PathDrawNodeDoom(Path source)
                 : base(source)
             {
             }
@@ -99,24 +103,29 @@ namespace osu.Framework.Graphics.Lines
                 Color4 firstMiddleColour = colourAt(segment.StartPoint);
                 Color4 secondMiddleColour = colourAt(segment.EndPoint);
 
+                float startU = distance;
+                float endU = distance + segmentLength;
+
+                float centreX = texRect.Centre.X;
+
                 // Each of the quads (mentioned above) is rendered as 2 triangles:
                 // Outer quad, triangle 1
                 triangleBatch.Add(new TexturedVertex3D
                 {
                     Position = new Vector3(segmentRight.EndPoint.X, segmentRight.EndPoint.Y, 0),
-                    TexturePosition = new Vector2(texRect.Left, texRect.Centre.Y),
+                    TexturePosition = new Vector2(texRect.Right, endU),
                     Colour = colourAt(segmentRight.EndPoint)
                 });
                 triangleBatch.Add(new TexturedVertex3D
                 {
                     Position = new Vector3(segmentRight.StartPoint.X, segmentRight.StartPoint.Y, 0),
-                    TexturePosition = new Vector2(texRect.Left, texRect.Centre.Y),
+                    TexturePosition = new Vector2(texRect.Right, startU),
                     Colour = colourAt(segmentRight.StartPoint)
                 });
                 triangleBatch.Add(new TexturedVertex3D
                 {
                     Position = firstMiddlePoint,
-                    TexturePosition = new Vector2(texRect.Right, texRect.Centre.Y),
+                    TexturePosition = new Vector2(centreX, startU),
                     Colour = firstMiddleColour
                 });
 
@@ -124,19 +133,19 @@ namespace osu.Framework.Graphics.Lines
                 triangleBatch.Add(new TexturedVertex3D
                 {
                     Position = firstMiddlePoint,
-                    TexturePosition = new Vector2(texRect.Right, texRect.Centre.Y),
+                    TexturePosition = new Vector2(centreX, startU),
                     Colour = firstMiddleColour
                 });
                 triangleBatch.Add(new TexturedVertex3D
                 {
                     Position = secondMiddlePoint,
-                    TexturePosition = new Vector2(texRect.Right, texRect.Centre.Y),
+                    TexturePosition = new Vector2(centreX, endU),
                     Colour = secondMiddleColour
                 });
                 triangleBatch.Add(new TexturedVertex3D
                 {
                     Position = new Vector3(segmentRight.EndPoint.X, segmentRight.EndPoint.Y, 0),
-                    TexturePosition = new Vector2(texRect.Left, texRect.Centre.Y),
+                    TexturePosition = new Vector2(texRect.Right, endU),
                     Colour = colourAt(segmentRight.EndPoint)
                 });
 
@@ -144,19 +153,19 @@ namespace osu.Framework.Graphics.Lines
                 triangleBatch.Add(new TexturedVertex3D
                 {
                     Position = firstMiddlePoint,
-                    TexturePosition = new Vector2(texRect.Right, texRect.Centre.Y),
+                    TexturePosition = new Vector2(centreX, startU),
                     Colour = firstMiddleColour
                 });
                 triangleBatch.Add(new TexturedVertex3D
                 {
                     Position = secondMiddlePoint,
-                    TexturePosition = new Vector2(texRect.Right, texRect.Centre.Y),
+                    TexturePosition = new Vector2(centreX, endU),
                     Colour = secondMiddleColour
                 });
                 triangleBatch.Add(new TexturedVertex3D
                 {
                     Position = new Vector3(segmentLeft.EndPoint.X, segmentLeft.EndPoint.Y, 0),
-                    TexturePosition = new Vector2(texRect.Left, texRect.Centre.Y),
+                    TexturePosition = new Vector2(texRect.Left, endU),
                     Colour = colourAt(segmentLeft.EndPoint)
                 });
 
@@ -164,19 +173,19 @@ namespace osu.Framework.Graphics.Lines
                 triangleBatch.Add(new TexturedVertex3D
                 {
                     Position = new Vector3(segmentLeft.EndPoint.X, segmentLeft.EndPoint.Y, 0),
-                    TexturePosition = new Vector2(texRect.Left, texRect.Centre.Y),
+                    TexturePosition = new Vector2(texRect.Left, endU),
                     Colour = colourAt(segmentLeft.EndPoint)
                 });
                 triangleBatch.Add(new TexturedVertex3D
                 {
                     Position = new Vector3(segmentLeft.StartPoint.X, segmentLeft.StartPoint.Y, 0),
-                    TexturePosition = new Vector2(texRect.Left, texRect.Centre.Y),
+                    TexturePosition = new Vector2(texRect.Left, startU),
                     Colour = colourAt(segmentLeft.StartPoint)
                 });
                 triangleBatch.Add(new TexturedVertex3D
                 {
                     Position = firstMiddlePoint,
-                    TexturePosition = new Vector2(texRect.Right, texRect.Centre.Y),
+                    TexturePosition = new Vector2(centreX, startU),
                     Colour = firstMiddleColour
                 });
             }
@@ -209,11 +218,13 @@ namespace osu.Framework.Graphics.Lines
 
                 for (int i = 1; i <= stepCount; i++)
                 {
+                    var p1 = current;
+
                     // Center point
                     triangleBatch.Add(new TexturedVertex3D
                     {
                         Position = new Vector3(origin.X, origin.Y, 1),
-                        TexturePosition = new Vector2(texRect.Right, texRect.Centre.Y),
+                        TexturePosition = new Vector2(texRect.Centre.X, distance),
                         Colour = originColour
                     });
 
@@ -221,18 +232,21 @@ namespace osu.Framework.Graphics.Lines
                     triangleBatch.Add(new TexturedVertex3D
                     {
                         Position = new Vector3(current.X, current.Y, 0),
-                        TexturePosition = new Vector2(texRect.Left, texRect.Centre.Y),
+                        TexturePosition = new Vector2(thetaDiff < 0 ? texRect.Left : texRect.Right, distance),
                         Colour = currentColour
                     });
 
                     current = i < stepCount ? origin + pointOnCircle(theta0 + i * thetaStep) * radius : end;
                     currentColour = colourAt(current);
 
+                    float dist = (p1 - current).Length * stepSize;
+                    distance += dist;
+
                     // Second outer point
                     triangleBatch.Add(new TexturedVertex3D
                     {
                         Position = new Vector3(current.X, current.Y, 0),
-                        TexturePosition = new Vector2(texRect.Left, texRect.Centre.Y),
+                        TexturePosition = new Vector2(thetaDiff < 0 ? texRect.Left : texRect.Right, distance),
                         Colour = currentColour
                     });
                 }
@@ -258,6 +272,8 @@ namespace osu.Framework.Graphics.Lines
                 // that make sense in the realm of OpenGL, rather than terms which  are technically
                 // accurate in the actually used "flipped" system.
 
+                distance = 0;
+
                 Debug.Assert(texture != null);
                 Debug.Assert(segments.Count > 0);
 
@@ -270,6 +286,8 @@ namespace osu.Framework.Graphics.Lines
                 {
                     Line currSegment = segments[i];
 
+                    segmentLength = currSegment.Rho * stepSize;
+
                     Vector2 ortho = currSegment.OrthogonalDirection;
                     if (float.IsNaN(ortho.X) || float.IsNaN(ortho.Y))
                         ortho = Vector2.UnitY;
@@ -277,7 +295,7 @@ namespace osu.Framework.Graphics.Lines
                     Line currSegmentLeft = new Line(currSegment.StartPoint + ortho * radius, currSegment.EndPoint + ortho * radius);
                     Line currSegmentRight = new Line(currSegment.StartPoint - ortho * radius, currSegment.EndPoint - ortho * radius);
 
-                    addSegmentQuads(currSegment, currSegmentLeft, currSegmentRight, texRect);
+                    Line? prev = null;
 
                     if (prevSegmentLeft is Line psLeft && prevSegmentRight is Line psRight)
                     {
@@ -285,8 +303,23 @@ namespace osu.Framework.Graphics.Lines
 
                         // Connection/filler caps between segment quads
                         float thetaDiff = currSegment.Theta - segments[i - 1].Theta;
-                        addSegmentCaps(thetaDiff, currSegmentLeft, currSegmentRight, psLeft, psRight, texRect);
+
+                        if (Math.Abs(thetaDiff) > MathF.PI)
+                            thetaDiff = -Math.Sign(thetaDiff) * 2 * MathF.PI + thetaDiff;
+
+                        if (Math.Abs(thetaDiff) > 0.1f)
+                            addSegmentCaps(thetaDiff, currSegmentLeft, currSegmentRight, psLeft, psRight, texRect);
+
+                        else
+                        {
+                            currSegmentLeft = new Line(psLeft.EndPoint, currSegmentLeft.EndPoint);
+                            currSegmentRight = new Line(psRight.EndPoint, currSegmentRight.EndPoint);
+                        }
                     }
+
+                    addSegmentQuads(currSegment, currSegmentLeft, currSegmentRight, texRect);
+
+                    distance += segmentLength;
 
                     // Explanation of semi-circle caps:
                     // Semi-circles are essentially 180 degree caps. So to create these caps, we

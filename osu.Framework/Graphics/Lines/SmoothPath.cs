@@ -66,9 +66,30 @@ namespace osu.Framework.Graphics.Lines
             int textureWidth = (int)PathRadius * 2;
 
             //initialise background
+            var raw = GetImageData(textureWidth);
+
+            if (Texture?.Width == raw.Width)
+            {
+                Texture.SetData(new TextureUpload(raw));
+            }
+            else
+            {
+                var texture = new DisposableTexture(renderer.CreateTexture(raw.Width, raw.Height, true), wrapModeT: (this as DoomPath)?.DoomMode == true ? WrapMode.Repeat : default);
+                texture.SetData(new TextureUpload(raw));
+                Texture = texture;
+            }
+
+            if (customBackgroundColour == null)
+                base.BackgroundColour = ColourAt(0).Opacity(0);
+
+            textureCache.Validate();
+        }
+
+        protected virtual Image<Rgba32> GetImageData(int textureWidth)
+        {
             var raw = new Image<Rgba32>(textureWidth, 1);
 
-            const float aa_portion = 0.02f;
+            const float aa_portion = 0.05f;
 
             for (int i = 0; i < textureWidth; i++)
             {
@@ -78,21 +99,7 @@ namespace osu.Framework.Graphics.Lines
                 raw[i, 0] = new Rgba32(colour.R, colour.G, colour.B, colour.A * Math.Min(progress / aa_portion, 1));
             }
 
-            if (Texture?.Width == textureWidth)
-            {
-                Texture.SetData(new TextureUpload(raw));
-            }
-            else
-            {
-                var texture = new DisposableTexture(renderer.CreateTexture(textureWidth, 1, true));
-                texture.SetData(new TextureUpload(raw));
-                Texture = texture;
-            }
-
-            if (customBackgroundColour == null)
-                base.BackgroundColour = ColourAt(0).Opacity(0);
-
-            textureCache.Validate();
+            return raw;
         }
 
         internal override DrawNode GenerateDrawNodeSubtree(ulong frame, int treeIndex, bool forceNewDrawNode)

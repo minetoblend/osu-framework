@@ -46,12 +46,12 @@ namespace osu.Framework.Tests.Visual.UserInterface
         {
             AddStep("create path", () =>
             {
-                Child = new TexturedPath
+                Child = new DoomPath
                 {
                     Anchor = Anchor.Centre,
                     Origin = Anchor.Centre,
                     Vertices = new List<Vector2> { Vector2.Zero, new Vector2(300, 300) },
-                    Texture = gradientTexture,
+                    PathRadius = 100
                 };
             });
         }

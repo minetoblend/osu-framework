@@ -12,8 +12,8 @@ namespace osu.Framework.Graphics.Textures
     {
         private readonly Texture parent;
 
-        public DisposableTexture(Texture parent)
-            : base(parent)
+        public DisposableTexture(Texture parent, WrapMode wrapModeS = WrapMode.None, WrapMode wrapModeT = WrapMode.None)
+            : base(parent, wrapModeS: wrapModeS, wrapModeT: wrapModeT)
         {
             this.parent = parent;
         }

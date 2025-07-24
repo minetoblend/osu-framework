@@ -19,7 +19,7 @@ void main(void)
     vec3 maskingPos = g_ToMaskingSpace * vec3(m_Position.xy, 1.0);
     v_MaskingPosition = maskingPos.xy / maskingPos.z;
 
-    v_TexRect = vec4(0.0);
+    v_TexRect = vec4(0.0,0.0,1.0,1.0);
     v_BlendRange = vec2(0.0);
 
     v_Colour = m_Colour;

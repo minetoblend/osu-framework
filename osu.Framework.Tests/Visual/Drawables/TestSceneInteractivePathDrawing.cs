@@ -36,10 +36,11 @@ namespace osu.Framework.Tests.Visual.Drawables
                         Colour = Color4.DeepPink,
                         PathRadius = 5,
                     },
-                    approximatedDrawnPath = new Path
+                    approximatedDrawnPath = new DoomPath
                     {
-                        Colour = Color4.Blue,
-                        PathRadius = 3,
+                        // Colour = Color4.DeepPink,
+                        PathRadius = 100,
+                        DoomMode = true
                     },
                     controlPointPath = new Path
                     {
