@@ -215,5 +215,33 @@ namespace osu.Framework.Tests.Visual.UserInterface
 
             AddAssert("size = (100, 100)", () => Precision.AlmostEquals(new Vector2(100), path.DrawSize));
         }
+
+        [Test]
+        public void TestLineStyle()
+        {
+            Path path = null;
+            AddStep("create path", () => Child = path = new TexturedPath
+            {
+                Anchor = Anchor.Centre,
+                Origin = Anchor.Centre,
+                PathRadius = 20,
+                Vertices = new List<Vector2>
+                {
+                    new Vector2(50, 50),
+                    new Vector2(50, 150),
+                    new Vector2(150, 150),
+                    new Vector2(200, 0),
+                    new Vector2(100, 50),
+                },
+                Texture = gradientTexture,
+            });
+
+            AddStep("linejoin: round", () => path.LineJoin = LineJoin.Round);
+            AddStep("linejoin: bevel", () => path.LineJoin = LineJoin.Bevel);
+            AddStep("linejoin: miter", () => path.LineJoin = LineJoin.Miter);
+
+            AddStep("linecap: round", () => path.LineCap = LineCap.Round);
+            AddStep("linecap: square", () => path.LineCap = LineCap.Square);
+        }
     }
 }

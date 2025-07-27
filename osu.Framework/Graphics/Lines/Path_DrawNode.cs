@@ -12,6 +12,7 @@ using osu.Framework.Graphics.Rendering;
 using osu.Framework.Graphics.Rendering.Vertices;
 using osu.Framework.Graphics.Shaders;
 using System.Diagnostics;
+using osu.Framework.Logging;
 
 namespace osu.Framework.Graphics.Lines
 {
@@ -28,6 +29,8 @@ namespace osu.Framework.Graphics.Lines
             private Texture? texture;
             private Vector2 drawSize;
             private float radius;
+            private LineJoin lineJoin;
+            private LineCap lineCap;
             private IShader? pathShader;
 
             private IVertexBatch<TexturedVertex3D>? triangleBatch;
@@ -47,6 +50,8 @@ namespace osu.Framework.Graphics.Lines
                 texture = Source.Texture;
                 drawSize = Source.DrawSize;
                 radius = Source.PathRadius;
+                lineJoin = Source.LineJoin;
+                lineCap = Source.LineCap;
                 pathShader = Source.pathShader;
             }
 
@@ -181,7 +186,7 @@ namespace osu.Framework.Graphics.Lines
                 });
             }
 
-            private void addSegmentCaps(float thetaDiff, Line segmentLeft, Line segmentRight, Line prevSegmentLeft, Line prevSegmentRight, RectangleF texRect)
+            private void addRoundSegmentCaps(float thetaDiff, Line segmentLeft, Line segmentRight, Line prevSegmentLeft, Line prevSegmentRight, RectangleF texRect)
             {
                 Debug.Assert(triangleBatch != null);
 
@@ -238,6 +243,174 @@ namespace osu.Framework.Graphics.Lines
                 }
             }
 
+            private void addMiterSegmentCaps(float thetaDiff, Line segmentLeft, Line segmentRight, Line prevSegmentLeft, Line prevSegmentRight, RectangleF texRect)
+            {
+                Debug.Assert(triangleBatch != null);
+
+                if (Math.Abs(thetaDiff) > MathF.PI)
+                    thetaDiff = -Math.Sign(thetaDiff) * 2 * MathF.PI + thetaDiff;
+
+                if (thetaDiff == 0f)
+                    return;
+
+                Vector2 origin = (segmentLeft.StartPoint + segmentRight.StartPoint) / 2;
+                Color4 originColour = colourAt(origin);
+
+                var (start, end) = thetaDiff < 0 ? (prevSegmentLeft, segmentLeft) : (prevSegmentRight, segmentRight);
+
+                if (!start.TryIntersectWith(end, out float distance))
+                    return;
+
+                var joinPoint = start.At(distance);
+                var joinColour = colourAt(joinPoint);
+
+                triangleBatch.Add(new TexturedVertex3D
+                {
+                    Position = new Vector3(origin.X, origin.Y, 1),
+                    TexturePosition = new Vector2(texRect.Right, texRect.Centre.Y),
+                    Colour = originColour
+                });
+                triangleBatch.Add(new TexturedVertex3D
+                {
+                    Position = new Vector3(start.EndPoint.X, start.EndPoint.Y, 0),
+                    TexturePosition = new Vector2(texRect.Left, texRect.Centre.Y),
+                    Colour = colourAt(start.EndPoint)
+                });
+                triangleBatch.Add(new TexturedVertex3D
+                {
+                    Position = new Vector3(joinPoint.X, joinPoint.Y, 0),
+                    TexturePosition = new Vector2(texRect.Left, texRect.Centre.Y),
+                    Colour = joinColour
+                });
+
+                triangleBatch.Add(new TexturedVertex3D
+                {
+                    Position = new Vector3(origin.X, origin.Y, 1),
+                    TexturePosition = new Vector2(texRect.Right, texRect.Centre.Y),
+                    Colour = originColour
+                });
+                triangleBatch.Add(new TexturedVertex3D
+                {
+                    Position = new Vector3(joinPoint.X, joinPoint.Y, 0),
+                    TexturePosition = new Vector2(texRect.Left, texRect.Centre.Y),
+                    Colour = joinColour
+                });
+                triangleBatch.Add(new TexturedVertex3D
+                {
+                    Position = new Vector3(end.StartPoint.X, end.StartPoint.Y, 0),
+                    TexturePosition = new Vector2(texRect.Left, texRect.Centre.Y),
+                    Colour = colourAt(end.StartPoint)
+                });
+            }
+
+            private void addBevelSegmentCaps(float thetaDiff, Line segmentLeft, Line segmentRight, Line prevSegmentLeft, Line prevSegmentRight, RectangleF texRect)
+            {
+                Debug.Assert(triangleBatch != null);
+
+                if (Math.Abs(thetaDiff) > MathF.PI)
+                    thetaDiff = -Math.Sign(thetaDiff) * 2 * MathF.PI + thetaDiff;
+
+                if (thetaDiff == 0f)
+                    return;
+
+                Vector2 origin = (segmentLeft.StartPoint + segmentRight.StartPoint) / 2;
+                Color4 originColour = colourAt(origin);
+
+                Line start = thetaDiff > 0f ? new Line(prevSegmentLeft.EndPoint, prevSegmentRight.EndPoint) : new Line(prevSegmentRight.EndPoint, prevSegmentLeft.EndPoint);
+                Vector2 end = thetaDiff > 0f ? segmentRight.StartPoint : segmentLeft.StartPoint;
+
+                triangleBatch.Add(new TexturedVertex3D
+                {
+                    Position = new Vector3(origin.X, origin.Y, 1),
+                    TexturePosition = new Vector2(texRect.Right, texRect.Centre.Y),
+                    Colour = originColour
+                });
+                triangleBatch.Add(new TexturedVertex3D
+                {
+                    Position = new Vector3(start.EndPoint.X, start.EndPoint.Y, 0),
+                    TexturePosition = new Vector2(texRect.Left, texRect.Centre.Y),
+                    Colour = colourAt(start.EndPoint)
+                });
+                triangleBatch.Add(new TexturedVertex3D
+                {
+                    Position = new Vector3(end.X, end.Y, 0),
+                    TexturePosition = new Vector2(texRect.Left, texRect.Centre.Y),
+                    Colour = colourAt(end)
+                });
+            }
+
+            private void addSquareSegmentCaps(Vector2 left, Vector2 right, RectangleF texRect)
+            {
+                Debug.Assert(triangleBatch != null);
+
+                Vector2 origin = (left + right) / 2;
+                Color4 originColour = colourAt(origin);
+
+                var offset = (left - origin).PerpendicularLeft;
+
+                Logger.Log($"{left}, {right}");
+
+                var p1 = left + offset;
+                var p2 = right + offset;
+
+                triangleBatch.Add(new TexturedVertex3D
+                {
+                    Position = new Vector3(origin.X, origin.Y, 1),
+                    TexturePosition = new Vector2(texRect.Right, texRect.Centre.Y),
+                    Colour = originColour
+                });
+                triangleBatch.Add(new TexturedVertex3D
+                {
+                    Position = new Vector3(left.X, left.Y, 0),
+                    TexturePosition = new Vector2(texRect.Left, texRect.Centre.Y),
+                    Colour = colourAt(left)
+                });
+                triangleBatch.Add(new TexturedVertex3D
+                {
+                    Position = new Vector3(p1.X, p1.Y, 0),
+                    TexturePosition = new Vector2(texRect.Left, texRect.Centre.Y),
+                    Colour = colourAt(p1)
+                });
+
+                triangleBatch.Add(new TexturedVertex3D
+                {
+                    Position = new Vector3(origin.X, origin.Y, 1),
+                    TexturePosition = new Vector2(texRect.Right, texRect.Centre.Y),
+                    Colour = originColour
+                });
+                triangleBatch.Add(new TexturedVertex3D
+                {
+                    Position = new Vector3(p1.X, p1.Y, 0),
+                    TexturePosition = new Vector2(texRect.Left, texRect.Centre.Y),
+                    Colour = colourAt(p1)
+                });
+                triangleBatch.Add(new TexturedVertex3D
+                {
+                    Position = new Vector3(p2.X, p2.Y, 0),
+                    TexturePosition = new Vector2(texRect.Left, texRect.Centre.Y),
+                    Colour = colourAt(p2)
+                });
+
+                triangleBatch.Add(new TexturedVertex3D
+                {
+                    Position = new Vector3(origin.X, origin.Y, 1),
+                    TexturePosition = new Vector2(texRect.Right, texRect.Centre.Y),
+                    Colour = originColour
+                });
+                triangleBatch.Add(new TexturedVertex3D
+                {
+                    Position = new Vector3(p2.X, p2.Y, 0),
+                    TexturePosition = new Vector2(texRect.Left, texRect.Centre.Y),
+                    Colour = colourAt(p2)
+                });
+                triangleBatch.Add(new TexturedVertex3D
+                {
+                    Position = new Vector3(right.X, right.Y, 0),
+                    TexturePosition = new Vector2(texRect.Left, texRect.Centre.Y),
+                    Colour = colourAt(right)
+                });
+            }
+
             private void updateVertexBuffer()
             {
                 // Explanation of the terms "left" and "right":
@@ -285,7 +458,21 @@ namespace osu.Framework.Graphics.Lines
 
                         // Connection/filler caps between segment quads
                         float thetaDiff = currSegment.Theta - segments[i - 1].Theta;
-                        addSegmentCaps(thetaDiff, currSegmentLeft, currSegmentRight, psLeft, psRight, texRect);
+
+                        switch (lineJoin)
+                        {
+                            case LineJoin.Round:
+                                addRoundSegmentCaps(thetaDiff, currSegmentLeft, currSegmentRight, psLeft, psRight, texRect);
+                                break;
+
+                            case LineJoin.Miter:
+                                addMiterSegmentCaps(thetaDiff, currSegmentLeft, currSegmentRight, psLeft, psRight, texRect);
+                                break;
+
+                            case LineJoin.Bevel:
+                                addBevelSegmentCaps(thetaDiff, currSegmentLeft, currSegmentRight, psLeft, psRight, texRect);
+                                break;
+                        }
                     }
 
                     // Explanation of semi-circle caps:
@@ -300,16 +487,34 @@ namespace osu.Framework.Graphics.Lines
                         Line flippedLeft = new Line(currSegmentRight.EndPoint, currSegmentRight.StartPoint);
                         Line flippedRight = new Line(currSegmentLeft.EndPoint, currSegmentLeft.StartPoint);
 
-                        addSegmentCaps(MathF.PI, currSegmentLeft, currSegmentRight, flippedLeft, flippedRight, texRect);
+                        switch (lineCap)
+                        {
+                            case LineCap.Round:
+                                addRoundSegmentCaps(MathF.PI, currSegmentLeft, currSegmentRight, flippedLeft, flippedRight, texRect);
+                                break;
+
+                            case LineCap.Square:
+                                addSquareSegmentCaps(currSegmentLeft.StartPoint, currSegmentRight.StartPoint, texRect);
+                                break;
+                        }
                     }
 
                     if (i == segments.Count - 1)
                     {
-                        // Path end cap (semi-circle)
-                        Line flippedLeft = new Line(currSegmentRight.EndPoint, currSegmentRight.StartPoint);
-                        Line flippedRight = new Line(currSegmentLeft.EndPoint, currSegmentLeft.StartPoint);
+                        switch (lineCap)
+                        {
+                            case LineCap.Round:
+                                // Path end cap (semi-circle)
+                                Line flippedLeft = new Line(currSegmentRight.EndPoint, currSegmentRight.StartPoint);
+                                Line flippedRight = new Line(currSegmentLeft.EndPoint, currSegmentLeft.StartPoint);
 
-                        addSegmentCaps(MathF.PI, flippedLeft, flippedRight, currSegmentLeft, currSegmentRight, texRect);
+                                addRoundSegmentCaps(MathF.PI, flippedLeft, flippedRight, currSegmentLeft, currSegmentRight, texRect);
+                                break;
+
+                            case LineCap.Square:
+                                addSquareSegmentCaps(currSegmentRight.EndPoint, currSegmentLeft.EndPoint, texRect);
+                                break;
+                        }
                     }
 
                     prevSegmentLeft = currSegmentLeft;

@@ -79,6 +79,36 @@ namespace osu.Framework.Graphics.Lines
             }
         }
 
+        private LineJoin lineJoin;
+
+        public LineJoin LineJoin
+        {
+            get => lineJoin;
+            set
+            {
+                if (lineJoin == value)
+                    return;
+
+                lineJoin = value;
+                Invalidate(Invalidation.DrawNode);
+            }
+        }
+
+        private LineCap lineCap;
+
+        public LineCap LineCap
+        {
+            get => lineCap;
+            set
+            {
+                if (lineCap == value)
+                    return;
+
+                lineCap = value;
+                Invalidate(Invalidation.DrawNode);
+            }
+        }
+
         public override Axes RelativeSizeAxes
         {
             get => base.RelativeSizeAxes;
@@ -186,10 +216,10 @@ namespace osu.Framework.Graphics.Lines
 
                     foreach (var v in vertices)
                     {
-                        minX = Math.Min(minX, v.X - PathRadius);
-                        minY = Math.Min(minY, v.Y - PathRadius);
-                        maxX = Math.Max(maxX, v.X + PathRadius);
-                        maxY = Math.Max(maxY, v.Y + PathRadius);
+                        minX = Math.Min(minX, v.X - PathRadius * 1.41f);
+                        minY = Math.Min(minY, v.Y - PathRadius * 1.41f);
+                        maxX = Math.Max(maxX, v.X + PathRadius * 1.41f);
+                        maxY = Math.Max(maxY, v.Y + PathRadius * 1.41f);
                     }
 
                     return vertexBoundsCache.Value = new RectangleF(minX, minY, maxX - minX, maxY - minY);
