@@ -107,6 +107,9 @@ namespace osu.Framework.Graphics.Primitives
         [Browsable(false)]
         public Vector2 TopLeft => new Vector2(Left, Top);
 
+        [Browsable(false)]
+        public Vector2 TopCentre => new Vector2(Centre.X, Top);
+
         /// <summary>Gets the top right corner of the rectangle.</summary>
         [Browsable(false)]
         public Vector2 TopRight => new Vector2(Right, Top);
@@ -114,6 +117,9 @@ namespace osu.Framework.Graphics.Primitives
         /// <summary>Gets the bottom left corner of the rectangle.</summary>
         [Browsable(false)]
         public Vector2 BottomLeft => new Vector2(Left, Bottom);
+
+        [Browsable(false)]
+        public Vector2 BottomCentre => new Vector2(Centre.X, Bottom);
 
         /// <summary>Gets the bottom right corner of the rectangle.</summary>
         [Browsable(false)]

@@ -323,13 +323,15 @@ namespace osu.Framework.Graphics.Lines
 
         private readonly BufferedDrawNodeSharedData sharedData = new BufferedDrawNodeSharedData(new[] { RenderBufferFormat.D16 }, clipToRootNode: true);
 
-        protected override DrawNode CreateDrawNode() => new PathBufferedDrawNode(this, new PathDrawNode(this), sharedData);
+        protected override DrawNode CreateDrawNode() => new PathBufferedDrawNode(this, CreatePathDrawNode(), sharedData);
+
+        protected virtual DrawNode CreatePathDrawNode() => new PathDrawNode(this);
 
         private class PathBufferedDrawNode : BufferedDrawNode
         {
             protected new Path Source => (Path)base.Source;
 
-            public PathBufferedDrawNode(Path source, PathDrawNode child, BufferedDrawNodeSharedData sharedData)
+            public PathBufferedDrawNode(Path source, DrawNode child, BufferedDrawNodeSharedData sharedData)
                 : base(source, child, sharedData)
             {
             }

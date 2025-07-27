@@ -6,6 +6,7 @@
 layout(location = 0) in highp vec3 m_Position;
 layout(location = 1) in lowp vec4 m_Colour;
 layout(location = 2) in highp vec2 m_TexCoord;
+layout(location = 3) in highp vec4 m_TexRect;
 
 layout(location = 0) out highp vec2 v_MaskingPosition;
 layout(location = 1) out lowp vec4 v_Colour;
@@ -19,7 +20,7 @@ void main(void)
     vec3 maskingPos = g_ToMaskingSpace * vec3(m_Position.xy, 1.0);
     v_MaskingPosition = maskingPos.xy / maskingPos.z;
 
-    v_TexRect = vec4(0.0);
+    v_TexRect = m_TexRect;
     v_BlendRange = vec2(0.0);
 
     v_Colour = m_Colour;

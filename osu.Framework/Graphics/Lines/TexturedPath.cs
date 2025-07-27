@@ -12,5 +12,7 @@ namespace osu.Framework.Graphics.Lines
             get => base.Texture;
             set => base.Texture = value;
         }
+
+        protected override DrawNode CreatePathDrawNode() => new TexturedPathDrawNode(this);
     }
 }

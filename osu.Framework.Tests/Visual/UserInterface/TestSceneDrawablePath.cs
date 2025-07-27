@@ -12,6 +12,8 @@ using osu.Framework.Graphics.Lines;
 using osu.Framework.Graphics.Rendering;
 using osu.Framework.Graphics.Shapes;
 using osu.Framework.Graphics.Textures;
+using osu.Framework.IO.Stores;
+using osu.Framework.Platform;
 using osu.Framework.Utils;
 using osuTK;
 using osuTK.Graphics;
@@ -25,10 +27,13 @@ namespace osu.Framework.Tests.Visual.UserInterface
         private const int texture_width = 20;
 
         private Texture gradientTexture;
+        private Texture candyCaneTexture;
 
         [BackgroundDependencyLoader]
-        private void load(IRenderer renderer)
+        private void load(IRenderer renderer, Game game)
         {
+            var textures = new TextureStore(renderer, new TextureLoaderStore(new NamespacedResourceStore<byte[]>(game.Resources, "Textures")), useAtlas: true, TextureFilteringMode.Nearest);
+
             var image = new Image<Rgba32>(texture_width, 1);
 
             for (int i = 0; i < texture_width; ++i)
@@ -39,6 +44,8 @@ namespace osu.Framework.Tests.Visual.UserInterface
 
             gradientTexture = renderer.CreateTexture(texture_width, 1, true);
             gradientTexture.SetData(new TextureUpload(image));
+
+            candyCaneTexture = textures.Get("grass", WrapMode.Repeat, WrapMode.Repeat);
         }
 
         [Test]
@@ -214,6 +221,22 @@ namespace osu.Framework.Tests.Visual.UserInterface
             });
 
             AddAssert("size = (100, 100)", () => Precision.AlmostEquals(new Vector2(100), path.DrawSize));
+        }
+
+        [Test]
+        public void TestTexturedPath()
+        {
+            AddStep("create path", () =>
+            {
+                Child = new TexturedPath
+                {
+                    Anchor = Anchor.Centre,
+                    Origin = Anchor.Centre,
+                    Vertices = new List<Vector2> { Vector2.Zero, new Vector2(300, 300), new Vector2(400, 100) },
+                    Texture = candyCaneTexture,
+                    PathRadius = 50
+                };
+            });
         }
     }
 }
