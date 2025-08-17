@@ -70,7 +70,7 @@ namespace osu.Framework.Tests.Visual.Platform
             scaleContainer.Scale = new Vector2(host.Window.ContentScale);
             scaleContainer.Size = new Vector2(1 / host.Window.ContentScale);
 
-            scaleText.Text = $"Scale: {host.Window.ContentScale:F1}";
+            scaleText.Text = $"Scale: {host.Window.ContentScale:P0}";
         }
 
         private partial class SizeBox : Container
