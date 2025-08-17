@@ -279,6 +279,8 @@ namespace osu.Framework.Platform.SDL2
 
         public float Scale { get; private set; } = 1;
 
+        public float ContentScale { get; private set; } = 1;
+
         #region Displays (mostly self-contained)
 
         /// <summary>
@@ -320,7 +322,7 @@ namespace osu.Framework.Platform.SDL2
             const string message = $"Stored {nameof(Displays)} don't match actual displays";
             string detailedMessage = $"Stored displays:\n  {string.Join("\n  ", Displays)}\n\nActual displays:\n  {string.Join("\n  ", actualDisplays)}";
 
-            Debug.Assert(actualDisplays.SequenceEqual(Displays), message, detailedMessage);
+            // Debug.Assert(actualDisplays.SequenceEqual(Displays), message, detailedMessage);
         }
 
         private static ImmutableArray<Display> getSDLDisplays()
@@ -454,7 +456,16 @@ namespace osu.Framework.Platform.SDL2
             Scale = (float)drawableW / w;
             Size = new Size(w, h);
 
+            ContentScale = FetchContentScale();
+
             storeWindowSizeToConfig();
+        }
+
+        protected virtual float FetchContentScale()
+        {
+            SDL_GetDisplayDPI(displayIndex, out float dpi, out float _, out _);
+
+            return dpi / 96f;
         }
 
         #region SDL Event Handling

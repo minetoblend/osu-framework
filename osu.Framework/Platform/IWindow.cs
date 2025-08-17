@@ -273,6 +273,11 @@ namespace osu.Framework.Platform
         float Scale { get; }
 
         /// <summary>
+        /// The ratio of logical pixels to physical pixels
+        /// </summary>
+        float ContentScale { get; }
+
+        /// <summary>
         /// The minimum size of the window.
         /// </summary>
         /// <exception cref="InvalidOperationException">Thrown when setting a negative size, or a size greater than <see cref="MaxSize"/>.</exception>

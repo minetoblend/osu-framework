@@ -283,6 +283,8 @@ namespace osu.Framework.Platform.SDL3
 
         public float Scale { get; private set; } = 1;
 
+        public float ContentScale { get; private set; } = 1;
+
         #region Displays (mostly self-contained)
 
         /// <summary>
@@ -458,6 +460,8 @@ namespace osu.Framework.Platform.SDL3
 
             Scale = (float)drawableW / w;
             Size = new Size(w, h);
+
+            ContentScale = SDL_GetWindowDisplayScale(SDLWindowHandle);
 
             if (storeToConfig)
                 storeWindowSizeToConfig();
