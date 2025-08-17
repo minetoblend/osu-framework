@@ -322,7 +322,7 @@ namespace osu.Framework.Platform.SDL2
             const string message = $"Stored {nameof(Displays)} don't match actual displays";
             string detailedMessage = $"Stored displays:\n  {string.Join("\n  ", Displays)}\n\nActual displays:\n  {string.Join("\n  ", actualDisplays)}";
 
-            // Debug.Assert(actualDisplays.SequenceEqual(Displays), message, detailedMessage);
+            Debug.Assert(actualDisplays.SequenceEqual(Displays), message, detailedMessage);
         }
 
         private static ImmutableArray<Display> getSDLDisplays()
