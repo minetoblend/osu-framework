@@ -461,11 +461,13 @@ namespace osu.Framework.Platform.SDL2
             storeWindowSizeToConfig();
         }
 
-        protected virtual float FetchContentScale()
-        {
-            SDL_GetDisplayDPI(displayIndex, out float dpi, out float _, out _);
+        protected virtual float FetchContentScale() => Scale;
 
-            return dpi / 96f;
+        protected float FetchDpi()
+        {
+            SDL_GetDisplayDPI(displayIndex, out float ddpi, out _, out _);
+
+            return ddpi;
         }
 
         #region SDL Event Handling

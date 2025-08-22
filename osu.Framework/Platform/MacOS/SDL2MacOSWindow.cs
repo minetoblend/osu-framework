@@ -68,8 +68,5 @@ namespace osu.Framework.Platform.MacOS
 
             ScheduleEvent(() => TriggerMouseWheel(new Vector2(scrollingDeltaX * scale_factor, scrollingDeltaY * scale_factor), true));
         }
-
-        // MacOS always reports the same dpi. The window scale however gets reported correctly here
-        protected override unsafe float FetchContentScale() => Scale;
     }
 }

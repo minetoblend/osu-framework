@@ -116,6 +116,8 @@ namespace osu.Framework.Platform.Windows
             base.HandleEventFromFilter(e);
         }
 
+        protected override float FetchContentScale() => FetchDpi() / 96f;
+
         public Vector2? LastMousePosition { get; set; }
 
         /// <summary>
