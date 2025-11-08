@@ -89,8 +89,8 @@ namespace osu.Framework.Input
                 if (!DragStarted)
                 {
                     var mouse = state.Mouse;
-                    if (mouse.IsPressed(Button) && Vector2Extensions.Distance(MouseDownPosition ?? mouse.Position, mouse.Position) > ClickDragDistance)
-                        handleDragStart(state);
+                    if (mouse.IsPressed(Button))
+                        tryHandleDragStart(state, MouseDownPosition ?? mouse.Position);
                 }
 
                 if (DragStarted)
@@ -192,7 +192,7 @@ namespace osu.Framework.Input
             PropagateButtonEvent(new[] { DraggedDrawable }, new DragEvent(state, Button, MouseDownPosition, lastPosition));
         }
 
-        private void handleDragStart(InputState state)
+        private void tryHandleDragStart(InputState state, Vector2 mouseDownPosition)
         {
             Trace.Assert(DraggedDrawable == null, $"The {nameof(DraggedDrawable)} was not set to null by {nameof(handleDragDrawableEnd)}.");
             Trace.Assert(!DragStarted, $"A {nameof(DraggedDrawable)} was already searched for. Call {nameof(handleDragDrawableEnd)} first.");
@@ -201,8 +201,10 @@ namespace osu.Framework.Input
 
             DragStarted = true;
 
+            float dragDistance = Vector2Extensions.Distance(mouseDownPosition, state.Mouse.Position);
+
             // also the laziness of IEnumerable here
-            var drawables = ButtonDownInputQueue.AsNonNull().Where(d => d.IsRootedAt(InputManager));
+            var drawables = ButtonDownInputQueue.AsNonNull().Where(d => d.IsRootedAt(InputManager) && dragDistance > d.ClickDragDistance);
 
             var draggable = PropagateButtonEvent(drawables, new DragStartEvent(state, Button, MouseDownPosition));
             if (draggable != null)

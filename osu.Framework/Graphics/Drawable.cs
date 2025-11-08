@@ -2424,6 +2424,11 @@ namespace osu.Framework.Graphics
         public bool IsDragged { get; internal set; }
 
         /// <summary>
+        /// The distance the mouse cursor must move after mouse-down to be recognized as a drag operation.
+        /// </summary>
+        public virtual float ClickDragDistance => 10;
+
+        /// <summary>
         /// Determines whether this drawable receives positional input when the mouse is at the
         /// given screen-space position.
         /// </summary>
