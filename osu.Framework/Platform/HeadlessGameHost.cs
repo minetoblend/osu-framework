@@ -7,7 +7,7 @@ using System.Diagnostics;
 using System.Linq;
 using osu.Framework.Configuration;
 using osu.Framework.Development;
-using osu.Framework.Graphics.Rendering.Dummy;
+using osu.Framework.Graphics.OpenGL;
 using osu.Framework.Input.Handlers;
 using osu.Framework.Logging;
 using osu.Framework.Threading;
@@ -55,7 +55,7 @@ namespace osu.Framework.Platform
 
         protected override Clipboard CreateClipboard() => new HeadlessClipboard();
 
-        protected override void ChooseAndSetupRenderer() => SetupRendererAndWindow(new DummyRenderer(), GraphicsSurfaceType.OpenGL);
+        protected override void ChooseAndSetupRenderer() => SetupRendererAndWindow(new GLRenderer(), GraphicsSurfaceType.OpenGL);
 
         protected override void SetupConfig(IDictionary<FrameworkSetting, object> defaultOverrides)
         {
