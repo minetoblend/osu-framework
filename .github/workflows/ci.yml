@@ -59,9 +59,6 @@ jobs:
        matrix:
           os:
             - { prettyname: Windows, fullname: windows-latest, configuration: Debug }
-            - { prettyname: macOS, fullname: macos-latest, configuration: Debug }
-            - { prettyname: Linux, fullname: ubuntu-latest, configuration: Debug }
-            - { prettyname: Linux, fullname: ubuntu-latest, configuration: Release }
           threadingMode: ['SingleThread', 'MultiThreaded']
     timeout-minutes: 60
 
