@@ -494,7 +494,7 @@ namespace osu.Framework.Testing
         [OneTimeTearDown]
         public void DestroyGameHostFromNUnit()
         {
-            ((TestSceneHost)host).ExitFromRunner();
+            host.Exit();
 
             try
             {
