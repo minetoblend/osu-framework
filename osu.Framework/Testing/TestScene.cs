@@ -470,7 +470,9 @@ namespace osu.Framework.Testing
         [OneTimeSetUp]
         public void SetupGameHostForNUnit()
         {
-            host = new TestSceneHost($"{GetType().Name}-{Guid.NewGuid()}", exitNestedGame);
+            host = Host.GetSuitableDesktopHost($"{GetType().Name}-{Guid.NewGuid()}");
+            host.ExitRequested += exitNestedGame;
+
             runner = CreateRunner();
 
             if (!(runner is Game game))
