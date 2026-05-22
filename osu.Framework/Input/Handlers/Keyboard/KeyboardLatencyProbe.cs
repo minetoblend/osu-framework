@@ -386,7 +386,12 @@ namespace osu.Framework.Input.Handlers.Keyboard
         public double? RecordKeyEvent(Key key, bool isDown)
         {
             ushort? vk = osuTkKeyToVk(key);
-            if (vk is null) return null;
+
+            if (vk is null)
+            {
+                Logger.Log($"Could not convert key {key} to VK");
+                return null;
+            }
 
             return RecordKeyEventByVk(vk.Value, isDown);
         }
