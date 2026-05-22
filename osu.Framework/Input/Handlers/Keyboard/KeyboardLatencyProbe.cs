@@ -335,6 +335,9 @@ namespace osu.Framework.Input.Handlers.Keyboard
                             {
                                 if (!pending.TryGetValue(key, out var q))
                                     pending[key] = q = new Queue<PendingRawEvent>(8);
+
+                                Logger.Log($"enqueuing key event vk={key},isDown={isDown}");
+
                                 q.Enqueue(new PendingRawEvent(ts, isDown));
                             }
                         }
@@ -404,6 +407,8 @@ namespace osu.Framework.Input.Handlers.Keyboard
             {
                 if (tryDequeue(vk, isDown, out var pendingEvent))
                 {
+                    Logger.Log($"dequeued key event vk={vk},isDown={isDown}");
+
                     double ms = (nowTicks - pendingEvent.TimestampTicks) * 1000.0 / Stopwatch.Frequency;
                     samplesMs[sampleHead] = ms;
                     sampleHead = (sampleHead + 1) % samplesMs.Length;
@@ -411,6 +416,10 @@ namespace osu.Framework.Input.Handlers.Keyboard
                     totalMatched++;
                     LatencyMeasured?.Invoke(ms);
                     return ms;
+                }
+                else
+                {
+                    Logger.Log($"failed to dequeue key event vk={vk},isDown={isDown}");
                 }
 
                 totalUnmatched++;
