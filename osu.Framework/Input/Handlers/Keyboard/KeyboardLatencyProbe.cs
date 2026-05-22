@@ -323,20 +323,22 @@ namespace osu.Framework.Input.Handlers.Keyboard
                         if (raw.Header.Type == rim_typekeyboard)
                         {
                             var kb = raw.Keyboard;
-                            bool isDown = (kb.Flags & 0x01) == 0;
-                            bool isExtended = (kb.Flags & 0x02) != 0;
 
                             // Ignore the fake shift keys Windows synthesises for numpad/extended keys
                             if (kb.VKey == 0xFF) return IntPtr.Zero;
 
-                            int key = makeKey(kb.MakeCode, isExtended);
+                            bool isDown = (kb.Flags & 0x01) == 0;
+                            bool isExtended = (kb.Flags & 0x02) != 0;
+
+                            // Resolve generic VK_SHIFT/VK_CONTROL/VK_MENU to L/R variants
+                            ushort vk = normalizeVk(kb.VKey, kb.MakeCode, isExtended);
 
                             lock (@lock)
                             {
-                                if (!pending.TryGetValue(key, out var q))
-                                    pending[key] = q = new Queue<PendingRawEvent>(8);
+                                if (!pending.TryGetValue(vk, out var q))
+                                    pending[vk] = q = new Queue<PendingRawEvent>(8);
 
-                                Logger.Log($"enqueuing key event vk={key},isDown={isDown}");
+                                Logger.Log($"enqueuing key event vk=0x{vk:X2},isDown={isDown}");
 
                                 q.Enqueue(new PendingRawEvent(ts, isDown));
                             }
@@ -349,6 +351,29 @@ namespace osu.Framework.Input.Handlers.Keyboard
             }
 
             return DefWindowProcW(hWnd, msg, wParam, lParam);
+        }
+
+        private static ushort normalizeVk(ushort vk, ushort scanCode, bool isExtended)
+        {
+            const ushort vk_shift = 0x10, vk_control = 0x11, vk_menu = 0x12;
+            const ushort vk_lshift = 0xA0, vk_rshift = 0xA1;
+            const ushort vk_lcontrol = 0xA2, vk_rcontrol = 0xA3;
+            const ushort vk_lmenu = 0xA4, vk_rmenu = 0xA5;
+
+            switch (vk)
+            {
+                case vk_shift:
+                    return scanCode == 0x36 ? vk_rshift : vk_lshift;
+
+                case vk_control:
+                    return isExtended ? vk_rcontrol : vk_lcontrol;
+
+                case vk_menu:
+                    return isExtended ? vk_rmenu : vk_lmenu;
+
+                default:
+                    return vk;
+            }
         }
 
         public void Dispose()
