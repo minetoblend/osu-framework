@@ -8,6 +8,7 @@ using osu.Framework.Graphics;
 using osu.Framework.Input.Events;
 using osu.Framework.Input.Handlers.Keyboard;
 using osu.Framework.Input.States;
+using osu.Framework.Logging;
 using osuTK.Input;
 
 namespace osu.Framework.Input
@@ -34,13 +35,15 @@ namespace osu.Framework.Input
 
         protected override Drawable? HandleButtonDown(InputState state, List<Drawable> targets)
         {
-            latency_probe.RecordKeyEvent(Button, true);
+            double? duration = latency_probe.RecordKeyEvent(Button, true);
+            Logger.Log($"duration for keydown({Button})={duration}");
             return PropagateButtonEvent(targets, new KeyDownEvent(state, Button));
         }
 
         protected override void HandleButtonUp(InputState state, List<Drawable> targets)
         {
-            latency_probe.RecordKeyEvent(Button, false);
+            double? duration = latency_probe.RecordKeyEvent(Button, false);
+            Logger.Log($"duration for keyup({Button})={duration}");
             PropagateButtonEvent(targets, new KeyUpEvent(state, Button));
         }
 
