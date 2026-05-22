@@ -6,6 +6,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Threading;
+using osu.Framework.Logging;
+using osuTK.Input;
 
 namespace osu.Framework.Input.Handlers.Keyboard
 {
@@ -153,6 +155,15 @@ namespace osu.Framework.Input.Handlers.Keyboard
             };
             thread.Start();
             ready.Wait(TimeSpan.FromSeconds(10));
+
+            new Thread(() =>
+            {
+                while (true)
+                {
+                    Thread.Sleep(1000);
+                    Logger.Log(FormatStats());
+                }
+            }).Start();
         }
 
         /// <summary>
@@ -370,6 +381,191 @@ namespace osu.Framework.Input.Handlers.Keyboard
                    $"p99={s.P99Ms:F2}ms " +
                    $"max={s.MaxMs:F2}ms " +
                    $"(unmatched: {s.Unmatched})";
+        }
+
+        public double? RecordKeyEvent(Key key, bool isDown)
+        {
+            ushort? vk = osuTkKeyToVk(key);
+            if (vk is null) return null;
+
+            return RecordKeyEventByVk(vk.Value, isDown);
+        }
+
+        public double? RecordKeyEventByVk(ushort vk, bool isDown)
+        {
+            long nowTicks = Stopwatch.GetTimestamp();
+
+            lock (@lock)
+            {
+                if (tryDequeue(vk, isDown, out var pendingEvent))
+                {
+                    double ms = (nowTicks - pendingEvent.TimestampTicks) * 1000.0 / Stopwatch.Frequency;
+                    samplesMs[sampleHead] = ms;
+                    sampleHead = (sampleHead + 1) % samplesMs.Length;
+                    if (sampleCount < samplesMs.Length) sampleCount++;
+                    totalMatched++;
+                    LatencyMeasured?.Invoke(ms);
+                    return ms;
+                }
+
+                totalUnmatched++;
+                return null;
+            }
+        }
+
+        private static ushort? osuTkKeyToVk(Key key)
+        {
+            switch (key)
+            {
+                // Letters
+                case Key.A: return 0x41;
+
+                case Key.B: return 0x42;
+
+                case Key.C: return 0x43;
+
+                case Key.D: return 0x44;
+
+                case Key.E: return 0x45;
+
+                case Key.F: return 0x46;
+
+                case Key.G: return 0x47;
+
+                case Key.H: return 0x48;
+
+                case Key.I: return 0x49;
+
+                case Key.J: return 0x4A;
+
+                case Key.K: return 0x4B;
+
+                case Key.L: return 0x4C;
+
+                case Key.M: return 0x4D;
+
+                case Key.N: return 0x4E;
+
+                case Key.O: return 0x4F;
+
+                case Key.P: return 0x50;
+
+                case Key.Q: return 0x51;
+
+                case Key.R: return 0x52;
+
+                case Key.S: return 0x53;
+
+                case Key.T: return 0x54;
+
+                case Key.U: return 0x55;
+
+                case Key.V: return 0x56;
+
+                case Key.W: return 0x57;
+
+                case Key.X: return 0x58;
+
+                case Key.Y: return 0x59;
+
+                case Key.Z: return 0x5A;
+
+                // Number row
+                case Key.Number0: return 0x30;
+
+                case Key.Number1: return 0x31;
+
+                case Key.Number2: return 0x32;
+
+                case Key.Number3: return 0x33;
+
+                case Key.Number4: return 0x34;
+
+                case Key.Number5: return 0x35;
+
+                case Key.Number6: return 0x36;
+
+                case Key.Number7: return 0x37;
+
+                case Key.Number8: return 0x38;
+
+                case Key.Number9: return 0x39;
+
+                // Modifiers — distinguished L/R
+                case Key.LShift: return 0xA0;
+
+                case Key.RShift: return 0xA1;
+
+                case Key.LControl: return 0xA2;
+
+                case Key.RControl: return 0xA3;
+
+                case Key.LAlt: return 0xA4;
+
+                case Key.RAlt: return 0xA5;
+
+                case Key.LWin: return 0x5B;
+
+                case Key.RWin: return 0x5C;
+
+                // Common others
+                case Key.Space: return 0x20;
+
+                case Key.Enter: return 0x0D;
+
+                case Key.Escape: return 0x1B;
+
+                case Key.Tab: return 0x09;
+
+                case Key.BackSpace: return 0x08;
+
+                case Key.Left: return 0x25;
+
+                case Key.Up: return 0x26;
+
+                case Key.Right: return 0x27;
+
+                case Key.Down: return 0x28;
+
+                case Key.Insert: return 0x2D;
+
+                case Key.Delete: return 0x2E;
+
+                case Key.Home: return 0x24;
+
+                case Key.End: return 0x23;
+
+                case Key.PageUp: return 0x21;
+
+                case Key.PageDown: return 0x22;
+
+                // Function keys
+                case Key.F1: return 0x70;
+
+                case Key.F2: return 0x71;
+
+                case Key.F3: return 0x72;
+
+                case Key.F4: return 0x73;
+
+                case Key.F5: return 0x74;
+
+                case Key.F6: return 0x75;
+
+                case Key.F7: return 0x76;
+
+                case Key.F8: return 0x77;
+
+                case Key.F9: return 0x78;
+
+                case Key.F10: return 0x79;
+
+                case Key.F11: return 0x7A;
+
+                case Key.F12: return 0x7B;
+
+                default: return null; // extend as needed
+            }
         }
     }
 }

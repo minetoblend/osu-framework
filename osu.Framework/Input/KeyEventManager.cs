@@ -6,6 +6,7 @@ using System.Linq;
 using osu.Framework.Extensions.ObjectExtensions;
 using osu.Framework.Graphics;
 using osu.Framework.Input.Events;
+using osu.Framework.Input.Handlers.Keyboard;
 using osu.Framework.Input.States;
 using osuTK.Input;
 
@@ -16,6 +17,8 @@ namespace osu.Framework.Input
     /// </summary>
     public class KeyEventManager : ButtonEventManager<Key>
     {
+        private static readonly KeyboardLatencyProbe latency_probe = new KeyboardLatencyProbe();
+
         public KeyEventManager(Key key)
             : base(key)
         {
@@ -29,10 +32,17 @@ namespace osu.Framework.Input
             PropagateButtonEvent(drawables, new KeyDownEvent(state, Button, true));
         }
 
-        protected override Drawable? HandleButtonDown(InputState state, List<Drawable> targets) => PropagateButtonEvent(targets, new KeyDownEvent(state, Button));
+        protected override Drawable? HandleButtonDown(InputState state, List<Drawable> targets)
+        {
+            latency_probe.RecordKeyEvent(Button, true);
+            return PropagateButtonEvent(targets, new KeyDownEvent(state, Button));
+        }
 
-        protected override void HandleButtonUp(InputState state, List<Drawable> targets) =>
+        protected override void HandleButtonUp(InputState state, List<Drawable> targets)
+        {
+            latency_probe.RecordKeyEvent(Button, false);
             PropagateButtonEvent(targets, new KeyUpEvent(state, Button));
+        }
 
         protected override bool SuppressLoggingEventInformation(Drawable drawable) => drawable is ICanSuppressKeyEventLogging canSuppress && canSuppress.SuppressKeyEventLogging;
     }
