@@ -517,6 +517,8 @@ namespace osu.Framework.Platform.SDL3
 
         private void handleKeyboardEvent(SDL_KeyboardEvent evtKey)
         {
+            OnKeyboardEvent(evtKey);
+
             Key key = evtKey.ToKey();
 
             if (key == Key.Unknown)
@@ -536,6 +538,8 @@ namespace osu.Framework.Platform.SDL3
                     break;
             }
         }
+
+        protected virtual void OnKeyboardEvent(SDL_KeyboardEvent e) { }
 
         private void handleKeymapChangedEvent() => KeymapChanged?.Invoke();
 

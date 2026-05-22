@@ -5,8 +5,11 @@ using System;
 using System.Drawing;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
+using System.Threading;
 using osu.Framework.Input;
+using osu.Framework.Input.Handlers.Keyboard;
 using osu.Framework.Input.Handlers.Mouse;
+using osu.Framework.Logging;
 using osu.Framework.Platform.SDL3;
 using osu.Framework.Platform.Windows.Native;
 using osuTK;
@@ -34,6 +37,8 @@ namespace osu.Framework.Platform.Windows
         /// </summary>
         private readonly bool applyBorderlessWindowHack;
 
+        private readonly KeyboardLatencyProbe latencyProbe = new KeyboardLatencyProbe();
+
         public SDL3WindowsWindow(GraphicsSurfaceType surfaceType, string appName)
             : base(surfaceType, appName)
         {
@@ -50,6 +55,13 @@ namespace osu.Framework.Platform.Windows
             }
         }
 
+        protected override void OnKeyboardEvent(SDL_KeyboardEvent e)
+        {
+            base.OnKeyboardEvent(e);
+
+            latencyProbe.RecordSdlEvent(e.raw, e.down);
+        }
+
         public override void Create()
         {
             base.Create();
@@ -57,6 +69,16 @@ namespace osu.Framework.Platform.Windows
             // disable all pen and touch feedback as this causes issues when running "optimised" fullscreen under Direct3D11.
             foreach (var feedbackType in Enum.GetValues<FeedbackType>())
                 Native.Input.SetWindowFeedbackSetting(WindowHandle, feedbackType, false);
+
+            var thread = new Thread(() =>
+            {
+                while (Exists)
+                {
+                    Thread.Sleep(1000);
+                    Logger.Log(latencyProbe.FormatStats());
+                }
+            });
+            thread.Start();
         }
 
         protected override bool HandleEventFromFilter(SDL_Event e)
